@@ -79,3 +79,7 @@ openssl ecparam -name prime256v1 -genkey -noout -out companyname_skadnetwork_pri
 # Generate pubilc key
 openssl ec -in companyname_skadnetwork_private_key.pem -pubout -out companyname_skadnetwork_public_key.pem
 ```
+
+
+## License
+Licensed under the [MIT license](./LICENSE).
