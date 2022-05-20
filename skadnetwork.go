@@ -160,46 +160,18 @@ type Postback struct {
 	DidWin *bool `json:"did-win,omitempty"`
 }
 
+// For 2.1:
 // https://developer.apple.com/documentation/storekit/skadnetwork/verifying_an_install-validation_postback/combining_parameters_for_previous_postback_versions#3626226
-func (p Postback) toItems2_1() []string {
-	ret := make([]string, 0, 7)
-	ret = append(ret,
-		"2.1",
-		p.AdNetworkID,
-		strconv.Itoa(p.CampaignID),
-		strconv.FormatInt(p.AppID, 10),
-		p.TransactionID,
-		strconv.FormatBool(*p.Redownload),
-	)
-	if p.SourceAppID != nil {
-		ret = append(ret, strconv.FormatInt(*p.SourceAppID, 10))
-	}
-	return ret
-}
-
+//
+// For 2.2:
 // https://developer.apple.com/documentation/storekit/skadnetwork/verifying_an_install-validation_postback/combining_parameters_for_previous_postback_versions#3761660
-func (p Postback) toItems2_2() []string {
-	ret := make([]string, 0, 8)
-	ret = append(ret,
-		"2.2",
-		p.AdNetworkID,
-		strconv.Itoa(p.CampaignID),
-		strconv.FormatInt(p.AppID, 10),
-		p.TransactionID,
-		strconv.FormatBool(*p.Redownload),
-	)
-	if p.SourceAppID != nil {
-		ret = append(ret, strconv.FormatInt(*p.SourceAppID, 10))
-	}
-	ret = append(ret, p.FidelityType.String())
-	return ret
-}
-
+//
+// For 3.0:
 // https://developer.apple.com/documentation/storekit/skadnetwork/verifying_an_install-validation_postback#2960703
-func (p Postback) toItems3_0() []string {
+func (p Postback) toItems() []string {
 	ret := make([]string, 0, 9)
 	ret = append(ret,
-		"3.0",
+		p.Version,
 		p.AdNetworkID,
 		strconv.Itoa(p.CampaignID),
 		strconv.FormatInt(p.AppID, 10),
@@ -209,27 +181,22 @@ func (p Postback) toItems3_0() []string {
 	if p.SourceAppID != nil {
 		ret = append(ret, strconv.FormatInt(*p.SourceAppID, 10))
 	}
-	ret = append(ret, p.FidelityType.String(), strconv.FormatBool(*p.DidWin))
+	switch p.Version {
+	case "2.2":
+		ret = append(ret, p.FidelityType.String())
+	case "3.0":
+		ret = append(ret, p.FidelityType.String(), strconv.FormatBool(*p.DidWin))
+	}
 	return ret
 }
 
 func (p Postback) verify() (bool, error) {
-	var (
-		key   *ecdsa.PublicKey
-		items []string
-	)
 	switch p.Version {
-	case "2.1":
-		key, items = pubV3, p.toItems2_1()
-	case "2.2":
-		key, items = pubV3, p.toItems2_2()
-	case "3.0":
-		key, items = pubV3, p.toItems3_0()
+	case "2.1", "2.2", "3.0":
+		return verify(pubV3, p.toItems(), p.AttributionSignature)
 	default:
 		return false, fmt.Errorf("skadnetwork: unsupported version error: %s", p.Version)
 	}
-
-	return verify(key, items, p.AttributionSignature)
 }
 
 type Signer struct {
