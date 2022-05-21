@@ -21,7 +21,8 @@ nonce := uuid.MustParse("68483ef6-0ada-40df-ab6b-3d19a66330fa")
 timestamp, _ := time.Parse(time.RFC3339, "2022-05-06T10:00:00Z")
 
 // For version 2.1
-sig, _ := s.Sign(&skadnetwork.Params2_1{
+sig, _ := s.Sign(&skadnetwork.Params{
+    Version:          "2.1",
     AdNetworkID:      "example123.skadnetwork",
     CampaignID:       42,
     ItunesItemID:     525463029,
@@ -31,35 +32,33 @@ sig, _ := s.Sign(&skadnetwork.Params2_1{
 })
 
 // For version 2.2
-sig, _ := s.Sign(&skadnetwork.Params2_2{
-    Params2_1: skadnetwork.Params2_1{
-        AdNetworkID:      "example123.skadnetwork",
-        CampaignID:       42,
-        ItunesItemID:     525463029,
-        Nonce:            nonce,
-        SourceAppStoreID: 1234567891,
-        Timestamp:        timestamp,
-    },
+sig, _ := s.Sign(&skadnetwork.Params{
+    Version:          "2.2",
+    AdNetworkID:      "example123.skadnetwork",
+    CampaignID:       42,
+    ItunesItemID:     525463029,
+    Nonce:            nonce,
+    SourceAppStoreID: 1234567891,
     FidelityType: skadnetwork.SKRenderedAds,
+    Timestamp:        timestamp,
 })
 
 // For version 3.0
-sig, _ := s.Sign(&skadnetwork.Params3_0{
-    Params2_1: skadnetwork.Params2_1{
-        AdNetworkID:      "example123.skadnetwork",
-        CampaignID:       42,
-        ItunesItemID:     525463029,
-        Nonce:            nonce,
-        SourceAppStoreID: 1234567891,
-        Timestamp:        timestamp,
-    },
+sig, _ := s.Sign(&skadnetwork.Params{
+    Version:          "3.0",
+    AdNetworkID:      "example123.skadnetwork",
+    CampaignID:       42,
+    ItunesItemID:     525463029,
+    Nonce:            nonce,
+    SourceAppStoreID: 1234567891,
     FidelityType: skadnetwork.SKRenderedAds,
+    Timestamp:        timestamp,
 })
 ```
 
 Verify the signed parameter data:
 ```go
-ok, _ := s.Verify(&skadnetwork.Params3_0{ ... }, sig)
+ok, _ := s.Verify(&skadnetwork.Params{ ... }, sig)
 ```
 
 Verify the Apple's postback data:
