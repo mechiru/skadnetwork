@@ -75,10 +75,10 @@ func TestSignAndVerify(t *testing.T) {
 	timestamp, _ := time.Parse(time.RFC3339, "2022-05-06T10:00:00Z")
 
 	for _, c := range []struct {
-		in skadnetwork.Params
+		in *skadnetwork.Params
 	}{
 		{
-			&skadnetwork.Params2_1{
+			&skadnetwork.Params{
 				AdNetworkID:      "example123.skadnetwork",
 				CampaignID:       42,
 				ItunesItemID:     525463029,
@@ -88,29 +88,25 @@ func TestSignAndVerify(t *testing.T) {
 			},
 		},
 		{
-			&skadnetwork.Params2_2{
-				Params2_1: skadnetwork.Params2_1{
-					AdNetworkID:      "example123.skadnetwork",
-					CampaignID:       42,
-					ItunesItemID:     525463029,
-					Nonce:            nonce,
-					SourceAppStoreID: 1234567891,
-					Timestamp:        timestamp,
-				},
-				FidelityType: skadnetwork.SKRenderedAds,
+			&skadnetwork.Params{
+				AdNetworkID:      "example123.skadnetwork",
+				CampaignID:       42,
+				ItunesItemID:     525463029,
+				Nonce:            nonce,
+				SourceAppStoreID: 1234567891,
+				Timestamp:        timestamp,
+				FidelityType:     skadnetwork.SKRenderedAds,
 			},
 		},
 		{
-			&skadnetwork.Params3_0{
-				Params2_1: skadnetwork.Params2_1{
-					AdNetworkID:      "example123.skadnetwork",
-					CampaignID:       42,
-					ItunesItemID:     525463029,
-					Nonce:            nonce,
-					SourceAppStoreID: 1234567891,
-					Timestamp:        timestamp,
-				},
-				FidelityType: skadnetwork.SKRenderedAds,
+			&skadnetwork.Params{
+				AdNetworkID:      "example123.skadnetwork",
+				CampaignID:       42,
+				ItunesItemID:     525463029,
+				Nonce:            nonce,
+				SourceAppStoreID: 1234567891,
+				Timestamp:        timestamp,
+				FidelityType:     skadnetwork.SKRenderedAds,
 			},
 		},
 	} {

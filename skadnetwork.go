@@ -46,72 +46,53 @@ func (f FidelityType) String() string {
 	return strconv.FormatInt(int64(f), 10)
 }
 
-type Params interface {
-	toItems() []string
-}
-
-type params2_0 struct {
+// https://developer.apple.com/documentation/storekit/skadnetwork/generating_the_signature_to_validate_storekit-rendered_ads
+type Params struct {
+	// Version 2.0 and later.
+	// The SKAdNetwork API version number.
+	Version string
+	// Version 1.0 and later.
 	// Your ad network identifier you registered with Apple.
 	AdNetworkID string
+	// Version 1.0 and later.
 	// A campaign number you provide.
 	CampaignID int
+	// Version 1.0 and later.
 	// The App Store ID of the product to advertise.
 	ItunesItemID int64
+	// Version 1.0 and later.
 	// A unique UUID value that you provide for each ad impression.
 	// You must lowercase the string representation of the nonce value in the signature.
 	Nonce uuid.UUID
+	// Version 2.0 and later.
 	// The App Store ID of the app that displays the ad.
 	// During testing, use an ID of 0 if you’re using a development-signed build and not an app from App Store.
 	SourceAppStoreID int64
+	// Version 2.2 and later.
+	// A value of 0 indicates a view-through ad presentation; a value of 1 indicates a StoreKit-rendered ad.
+	FidelityType FidelityType
+	// Version 1.0 and later.
 	// A timestamp you generate near the time of the ad impression.
 	Timestamp time.Time
 }
 
-func (p params2_0) toItems() []string {
-	return []string{
-		"2.0",
+func (p Params) toItems() []string {
+	items := make([]string, 0, 8)
+	items = append(items,
+		p.Version,
 		p.AdNetworkID,
 		strconv.Itoa(p.CampaignID),
 		strconv.FormatInt(p.ItunesItemID, 10),
 		p.Nonce.String(),
 		strconv.FormatInt(p.SourceAppStoreID, 10),
-		strconv.FormatInt(p.Timestamp.UnixMilli(), 10), // Represented as UNIX time in milliseconds.
+	)
+	switch p.Version {
+	case "2.2", "3.0":
+		items = append(items, p.FidelityType.String())
 	}
-}
-
-type Params2_1 params2_0
-
-func (p Params2_1) toItems() []string {
-	ret := params2_0(p).toItems()
-	ret[0] = "2.1"
-	return ret
-}
-
-type Params2_2 struct {
-	Params2_1
-	// Version 2.2 and later signatures require this parameter.
-	FidelityType FidelityType
-}
-
-func (p Params2_2) toItems() []string {
-	return []string{
-		"2.2",
-		p.AdNetworkID,
-		strconv.Itoa(p.CampaignID),
-		strconv.FormatInt(p.ItunesItemID, 10),
-		p.Nonce.String(),
-		strconv.FormatInt(p.SourceAppStoreID, 10),
-		p.FidelityType.String(),
-		strconv.FormatInt(p.Timestamp.UnixMilli(), 10),
-	}
-}
-
-type Params3_0 Params2_2
-
-func (p Params3_0) toItems() []string {
-	ret := Params2_2(p).toItems()
-	ret[0] = "3.0"
-	return ret
+	// Represented as UNIX time in milliseconds.
+	items = append(items, strconv.FormatInt(p.Timestamp.UnixMilli(), 10))
+	return items
 }
 
 type Postback struct {
@@ -220,12 +201,12 @@ func (s *Signer) sign(msg string) (string, error) {
 	return base64.StdEncoding.EncodeToString(der), nil
 }
 
-func (s *Signer) Sign(p Params) (string, error) {
+func (s *Signer) Sign(p *Params) (string, error) {
 	msg := strings.Join(p.toItems(), separator)
 	return s.sign(msg)
 }
 
-func (s *Signer) Verify(p Params, sig string) (bool, error) {
+func (s *Signer) Verify(p *Params, sig string) (bool, error) {
 	return verify(&s.key.PublicKey, p.toItems(), sig)
 }
 
