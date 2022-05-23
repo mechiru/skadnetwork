@@ -14,8 +14,7 @@ Parameter signing and postback validation only support version **2.1 and above**
 Sign the parameter data:
 ```go
 s, _ := skadnetwork.NewSigner(
-    "-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----" +
-    "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----",
+    "-----BEGIN EC PRIVATE KEY-----\n...\n-----END EC PRIVATE KEY-----"
 )
 nonce := uuid.MustParse("68483ef6-0ada-40df-ab6b-3d19a66330fa")
 timestamp, _ := time.Parse(time.RFC3339, "2022-05-06T10:00:00Z")
