@@ -247,40 +247,23 @@ func verify(key *ecdsa.PublicKey, items []string, sig string) (bool, error) {
 	return ecdsa.VerifyASN1(key, hash, der), nil
 }
 
-func decodePEM(data string) (key *ecdsa.PrivateKey, err error) {
+func decodePEM(data string) (*ecdsa.PrivateKey, error) {
 	// https://stackoverflow.com/questions/21322182/how-to-store-ecdsa-private-key-in-go
-
-	rest := []byte(data)
-	blocks := make([]*pem.Block, 2)
-	for i := 0; i < 2; i++ {
-		blocks[i], rest = pem.Decode(rest)
-		if blocks[i] == nil {
-			return nil, errors.New("skadnetwork: can not found data block")
-		}
+	block, rest := pem.Decode([]byte(data))
+	if block == nil {
+		return nil, errors.New("skadnetwork: can not found data block")
 	}
+
 	if len(rest) != 0 {
 		return nil, errors.New("skadnetwork: only 2 blocks are allowed for pem data")
 	}
 
-	var pub *ecdsa.PublicKey
-	for _, block := range blocks {
-		switch block.Type {
-		case "EC PRIVATE KEY":
-			key, err = x509.ParseECPrivateKey(block.Bytes)
-		case "PUBLIC KEY":
-			pub, err = parseECDSAPublicKey(block.Bytes)
-		default:
-			return nil, fmt.Errorf("skadnetwork: unexpected block type detected: %s", block.Type)
-		}
-		if err != nil {
-			return nil, fmt.Errorf("skadnetwork: block parse error of pem data: %w", err)
-		}
+	if block.Type != "EC PRIVATE KEY" {
+		return nil, fmt.Errorf("skadnetwork: unexpected block type detected: %s", block.Type)
 	}
-
-	if key == nil || pub == nil {
-		return nil, errors.New("skadnetowrk: ec private key and public key not included")
+	key, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("skadnetwork: block parse error of pem data: %w", err)
 	}
-	key.PublicKey = *pub
-
-	return
+	return key, nil
 }
