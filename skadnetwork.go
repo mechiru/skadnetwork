@@ -50,30 +50,30 @@ func (f FidelityType) String() string {
 type Params struct {
 	// Version 2.0 and later.
 	// The SKAdNetwork API version number.
-	Version string
+	Version string `json:"version,omitempty"`
 	// Version 1.0 and later.
 	// Your ad network identifier you registered with Apple.
-	AdNetworkID string
+	AdNetworkID string `json:"ad-network-id"`
 	// Version 1.0 and later.
 	// A campaign number you provide.
-	CampaignID int
+	CampaignID int `json:"campaign-id"`
 	// Version 1.0 and later.
 	// The App Store ID of the product to advertise.
-	ItunesItemID int64
+	ItunesItemID int64 `json:"itunes-item-id"`
 	// Version 1.0 and later.
 	// A unique UUID value that you provide for each ad impression.
 	// You must lowercase the string representation of the nonce value in the signature.
-	Nonce uuid.UUID
+	Nonce uuid.UUID `json:"nonce"`
 	// Version 2.0 and later.
 	// The App Store ID of the app that displays the ad.
 	// During testing, use an ID of 0 if you’re using a development-signed build and not an app from App Store.
-	SourceAppStoreID int64
+	SourceAppStoreID int64 `json:"source-app-store-id,omitempty"`
 	// Version 2.2 and later.
 	// A value of 0 indicates a view-through ad presentation; a value of 1 indicates a StoreKit-rendered ad.
-	FidelityType FidelityType
+	FidelityType FidelityType `json:"fidelity-type,omitempty"`
 	// Version 1.0 and later.
 	// A timestamp you generate near the time of the ad impression.
-	Timestamp time.Time
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func (p Params) toItems() []string {
