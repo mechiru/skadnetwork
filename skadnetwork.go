@@ -29,7 +29,7 @@ var (
 	// pubV2 = "MEkwEwYHKoZIzj0CAQYIKoZIzj0DAQEDMgAEMyHD625uvsmGq4C43cQ9BnfN2xslVT5V1nOmAMP6qaRRUll3PB1JYmgSm"
 
 	// Apple's NIST P-256 public key that you use to verify postback versions 2.1 or later:
-	pubV3, _ = parseECDSAPublicKeyBlock("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdp8GPcGqmhgzEFj9Z2nSpQVddayaPe4FMzqM9wib1+aHaaIzoHoLN9zW4K8y4SPykE3YVK3sVqW6Af0lfx3gg==")
+	pubV3, _ = parseECDSAPublicKey("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdp8GPcGqmhgzEFj9Z2nSpQVddayaPe4FMzqM9wib1+aHaaIzoHoLN9zW4K8y4SPykE3YVK3sVqW6Af0lfx3gg==")
 )
 
 // https://developer.apple.com/documentation/storekit/skadnetwork/signing_and_providing_ads
@@ -215,16 +215,13 @@ func Verify(p Postback) (bool, error) {
 	return p.verify()
 }
 
-func parseECDSAPublicKeyBlock(s string) (*ecdsa.PublicKey, error) {
+func parseECDSAPublicKey(s string) (*ecdsa.PublicKey, error) {
 	der, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
 		return nil, fmt.Errorf("skadnetwork: public key block decode error: %w", err)
 	}
-	return parseECDSAPublicKey(der)
-}
 
-func parseECDSAPublicKey(bytes []byte) (*ecdsa.PublicKey, error) {
-	pub, err := x509.ParsePKIXPublicKey(bytes)
+	pub, err := x509.ParsePKIXPublicKey(der)
 	if err != nil {
 		return nil, fmt.Errorf("skadnetwork: parse public key error: %w", err)
 	}
